@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import './questao.dart';
-import './resposta.dart';
+import 'package:flutter_application_teste_jady/questionario.dart';
+import 'package:flutter_application_teste_jady/resultado.dart';
 
 void main(){
   runApp(PerguntaApp());
@@ -11,6 +11,8 @@ class _PerguntaAppState extends State<PerguntaApp>{
   var _perguntaSelecionada = 0;
 
   bool _correta = true;
+  int _respostasCorretas = 0;
+  int _respostasErradas = 0;
 
   final List<Map<String, Object>> _perguntas = const [
       {
@@ -78,12 +80,23 @@ class _PerguntaAppState extends State<PerguntaApp>{
           print('Resposta correta!');
           _perguntaSelecionada++;
           _correta = true;
+          _respostasCorretas++;
         } else {
           print('Resposta incorreta!');
           _correta = false;
+          _respostasErradas++;
         }
       });
     }
+  }
+
+  void _reiniciarQuestionario(){
+    setState(() {
+      _perguntaSelecionada = 0;
+      _correta = true;
+      _respostasCorretas = 0;
+      _respostasErradas = 0;
+    });
   }
 
   bool get temPerguntaSelecionada{
@@ -97,13 +110,6 @@ class _PerguntaAppState extends State<PerguntaApp>{
       ? _perguntas[_perguntaSelecionada]['respostas'] as List<Map<String, Object>> 
       : [];
 
-    List<Widget> widgetsRespostas = respostas
-      .map((resp) => Resposta(
-          respostaTexto: (resp)['texto'] as String,
-          onSelecionado: () => _responder(resp['correta'] as bool),
-        ))
-      .toList();
-
 
     return MaterialApp(
       home: Scaffold(
@@ -114,15 +120,9 @@ class _PerguntaAppState extends State<PerguntaApp>{
           backgroundColor: Color( 0xff6200ee),
           shadowColor: Color(0xff3700b3),
         ),
-        body: Center(
-          child: temPerguntaSelecionada ? Column(
-            children: [
-              Questao(pergunta: _perguntas[_perguntaSelecionada]['pergunta'] as String,),
-              ...widgetsRespostas,
-              !_correta ? Text( 'Alternativa errada!', style: TextStyle(fontSize: 24, color: Colors.red,), ) : SizedBox.shrink(),
-            ],
-          ) : null,
-        ),
+        body: temPerguntaSelecionada 
+          ? Questionario(perguntas: _perguntas, perguntaSelecionada: _perguntaSelecionada, responder: _responder, respostas: respostas, correta: _correta)
+          : Resultado(respostasCorretas: _respostasCorretas, respostasErradas: _respostasErradas, reiniciar: _reiniciarQuestionario)
       ),
     );
   }
